@@ -562,16 +562,20 @@ RCT_EXPORT_METHOD(
     BranchLinkProperties *linkProperties = [self createLinkProperties:linkPropertiesMap withControlParams:controlParamsMap];
 
     [branchUniversalObject getShortUrlWithLinkProperties:linkProperties andCallback:^(NSString *url, NSError *error) {
-        if (!error) {
-            RCTLogInfo(@"RNBranch Success");
+        if (url && !error) {
+            RCTLogInfo(@"RNBranch Success 1");
             resolve(@{ @"url": url });
-        }
-        else if (error.code == BNCDuplicateResourceError) {
-             reject(@"RNBranch::Error::DuplicateResourceError", error.localizedDescription, error);
-           // reject(@"RNBranch::Error::DuplicateResourceError", [NSString stringWithFormat: @"%lu", (long)error.code], error);
-        }
-        else {
-            reject(@"RNBranch::Error", error.localizedDescription, error);
+        } else if (error) {
+            if (error.code == BNCDuplicateResourceError) {
+                RCTLogInfo(@"RNBranch BNCDuplicateResourceError 1");
+                reject(@"RNBranch::Error::DuplicateResourceError", error.localizedDescription ?: @"Duplicate resource error", error);
+            } else {
+                RCTLogInfo(@"RNBranch ERROR");
+                reject(@"RNBranch::Error", error.localizedDescription ?: @"Unknown error occurred", error);
+            }
+        } else {
+            RCTLogInfo(@"RNBranch Unexpected Error: URL is nil and no error 1");
+            reject(@"RNBranch::Error", @"Unexpected error occurred: URL is nil", nil);
         }
     }];
 }
